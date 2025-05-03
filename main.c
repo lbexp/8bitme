@@ -34,11 +34,17 @@ int validate_file_ext(char fileName[64]) {
 /*
  * read_file
  */
-void read_file(FILE *file, char name[64]) {
-    file = fopen(name, "r");
+void read_file(FILE **file, char name[64]) {
+    *file = fopen(name, "r");
 }
 
-void parse_file() {}
+void parse_file(FILE **file) {
+    char data[100];
+
+    fgets(data, sizeof(data), *file);
+
+    printf("Data contains: %s\n", data);
+}
 
 /***********************
  * FILE - End
@@ -56,12 +62,14 @@ int main() {
         return 0;
     }
 
-    read_file(file, fileName);
+    read_file(&file, fileName);
 
     if (!file) {
         printf("Can't find file named %s", fileName);
         return 0;
     }
+
+    parse_file(&file);
 
     return 0;
 }
