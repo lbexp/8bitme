@@ -34,7 +34,9 @@ int validate_file_ext(char fileName[64]) {
 /*
  * read_file
  */
-void read_file(FILE *file, char name[64]) { file = fopen(name, "r"); }
+void read_file(FILE *file, char name[64]) {
+    file = fopen(name, "r");
+}
 
 void parse_file() {}
 
