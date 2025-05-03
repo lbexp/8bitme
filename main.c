@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h>
 
 /***********************
  * IMAGE - Start
@@ -20,7 +21,15 @@ void create_img_data() {}
 /*
  * validate_file_ext
  */
-void validate_file_ext() {}
+int validate_file_ext(char fileName[64]) {
+    const char *dot = strchr(fileName, '.');
+
+    if (!dot || fileName == dot) {
+        return 0;
+    }
+
+    return strcmp(dot, ".png") == 0;
+}
 
 /*
  * read_file
@@ -45,12 +54,16 @@ int main() {
     printf("Please input file name: ");
     scanf("%s", (char *)&fileName);
 
+    if (!validate_file_ext(fileName)) {
+        printf("File should be in .png");
+        return 0;
+    }
+
     file = read_file(fileName);
 
-    if (file) {
-        printf("File found");
-    } else {
+    if (!file) {
         printf("Can't find file named %s", fileName);
+        return 0;
     }
 
     return 0;
