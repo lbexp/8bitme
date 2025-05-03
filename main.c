@@ -34,12 +34,7 @@ int validate_file_ext(char fileName[64]) {
 /*
  * read_file
  */
-FILE *read_file(char name[64]) {
-    FILE *file;
-    file = fopen(name, "r");
-
-    return file;
-}
+void read_file(FILE *file, char name[64]) { file = fopen(name, "r"); }
 
 void parse_file() {}
 
@@ -59,7 +54,7 @@ int main() {
         return 0;
     }
 
-    file = read_file(fileName);
+    read_file(file, fileName);
 
     if (!file) {
         printf("Can't find file named %s", fileName);
