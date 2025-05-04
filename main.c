@@ -18,6 +18,11 @@ void create_img_data() {}
  * FILE - Start
  ***********************/
 
+const char formats[2][8] = {
+    ".png",
+    ".bmp",
+};
+
 /*
  * validate_file_ext
  */
@@ -28,7 +33,13 @@ int validate_file_ext(char fileName[64]) {
         return 0;
     }
 
-    return strcmp(dot, ".png") == 0;
+    for (int i = 0; i < sizeof(formats); i++) {
+        if (strcmp(dot, formats[i]) == 0) {
+            return 1;
+        }
+    }
+
+    return 0;
 }
 
 /*
@@ -41,9 +52,9 @@ void read_file(FILE **file, char name[64]) {
 void parse_file(FILE **file) {
     char data[100];
 
-    fgets(data, sizeof(data), *file);
-
-    printf("Data contains: %s\n", data);
+    while (fgets(data, sizeof(data), *file)) {
+        printf("Data contains: %s\n", data);
+    }
 }
 
 /***********************
@@ -58,7 +69,7 @@ int main() {
     scanf("%s", (char *)&fileName);
 
     if (!validate_file_ext(fileName)) {
-        printf("File should be in .png");
+        printf("File should be in supported format");
         return 0;
     }
 
