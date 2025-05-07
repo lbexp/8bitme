@@ -6,16 +6,24 @@
  * Structs - Start
  ***********************/
 
-typedef struct {
-    uint16_t type;
-    uint32_t fileSize;
-    uint16_t reserved1;
-    uint16_t reserved2;
-    uint32_t offset;
-} BMPHeader;
+#pragma pack(push, 1)
+
+// Placeholder
+
+#pragma pack(pop)
 
 /***********************
  * Structs - End
+ ***********************/
+
+/***********************
+ * Constants - Start
+ ***********************/
+
+const uint8_t PNG_SIGNATURE[8] = {137, 80, 78, 71, 13, 10, 26, 10};
+
+/***********************
+ * Constants - End
  ***********************/
 
 /***********************
@@ -35,9 +43,8 @@ void create_img_data() {}
  * FILE - Start
  ***********************/
 
-const char formats[2][8] = {
+const char formats[1][8] = {
     ".png",
-    ".bmp",
 };
 
 /*
@@ -66,11 +73,17 @@ void read_file(FILE **file, char name[64]) {
     *file = fopen(name, "rb");
 }
 
-void parse_file(FILE **file) {
-    BMPHeader header;
+int parse_file(FILE **file) {
+    uint8_t signature[8];
 
-    fread(&header, sizeof(header), 1, *file);
-    printf("Header type: %d\n", header.type);
+    fread(&signature, 8, 1, *file);
+
+    if (memcmp(PNG_SIGNATURE, signature, 8)) {
+        printf("Wrong PNG signature!\n");
+        return 0;
+    }
+
+    return 1;
 }
 
 /***********************
@@ -96,7 +109,11 @@ int main() {
         return 0;
     }
 
-    parse_file(&file);
+    int isParsed = parse_file(&file);
+
+    if (!isParsed) {
+        return 0;
+    }
 
     return 0;
 }
