@@ -1,5 +1,22 @@
+#include <stdint.h>
 #include <stdio.h>
 #include <string.h>
+
+/***********************
+ * Structs - Start
+ ***********************/
+
+typedef struct {
+    uint16_t type;
+    uint32_t fileSize;
+    uint16_t reserved1;
+    uint16_t reserved2;
+    uint32_t offset;
+} BMPHeader;
+
+/***********************
+ * Structs - End
+ ***********************/
 
 /***********************
  * IMAGE - Start
@@ -46,15 +63,14 @@ int validate_file_ext(char fileName[64]) {
  * read_file
  */
 void read_file(FILE **file, char name[64]) {
-    *file = fopen(name, "r");
+    *file = fopen(name, "rb");
 }
 
 void parse_file(FILE **file) {
-    char data[100];
+    BMPHeader header;
 
-    while (fgets(data, sizeof(data), *file)) {
-        printf("Data contains: %s\n", data);
-    }
+    fread(&header, sizeof(header), 1, *file);
+    printf("Header type: %d\n", header.type);
 }
 
 /***********************
