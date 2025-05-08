@@ -41,6 +41,23 @@ uint32_t read_big_endian(FILE *file) {
 }
 
 /*
+ * validate_signature
+ */
+int validate_signature(FILE *file) {
+    uint8_t *signature[8];
+
+    fread(signature, 8, 1, file);
+
+    if (memcmp(signature, PNG_SIGNATURE, 8)) {
+        printf("Wrong PNG signature!\n");
+
+        return 0;
+    }
+
+    return 1;
+}
+
+/*
  * create_img_data
  */
 void create_img_data() {}
@@ -77,16 +94,10 @@ int validate_file_ext(char fileName[64]) {
 }
 
 /*
- * read_file
+ * parse_file
  */
-
 int parse_file(FILE **file) {
-    uint8_t signature[8];
-
-    fread(&signature, 8, 1, *file);
-
-    if (memcmp(PNG_SIGNATURE, signature, 8)) {
-        printf("Wrong PNG signature!\n");
+    if (!validate_signature(*file)) {
         return 0;
     }
 
