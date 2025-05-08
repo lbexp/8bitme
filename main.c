@@ -59,6 +59,13 @@ int validate_signature(FILE *file) {
 
 /*
  * parse_data
+ * PNG binary data structure:
+ * - 8-byte signature
+ * - Chunks data:
+ *   - 4-byte length
+ *   - 4-byte chunk type
+ *   - N-byte data
+ *   - 4-byte CRC
  */
 int parse_data(FILE **file) {
     if (!validate_signature(*file)) {
