@@ -58,6 +58,30 @@ int validate_signature(FILE *file) {
 }
 
 /*
+ * parse_data
+ */
+int parse_data(FILE **file) {
+    if (!validate_signature(*file)) {
+        return 0;
+    }
+
+    while (!feof(*file)) {
+        uint32_t length = read_big_endian(*file);
+        char type[5] = {0};
+        fread(type, 1, 4, *file);
+
+        printf("Chunk: %s, Length: %d\n", type, length);
+
+        fseek(*file, length + 4, SEEK_CUR);
+        if (strcmp(type, "IEND") == 0) {
+            break;
+        }
+    }
+
+    return 1;
+}
+
+/*
  * create_img_data
  */
 void create_img_data() {}
@@ -93,30 +117,6 @@ int validate_file_ext(char fileName[64]) {
     return 0;
 }
 
-/*
- * parse_file
- */
-int parse_file(FILE **file) {
-    if (!validate_signature(*file)) {
-        return 0;
-    }
-
-    while (!feof(*file)) {
-        uint32_t length = read_big_endian(*file);
-        char type[5] = {0};
-        fread(type, 1, 4, *file);
-
-        printf("Chunk: %s, Length: %d\n", type, length);
-
-        fseek(*file, length + 4, SEEK_CUR);
-        if (strcmp(type, "IEND") == 0) {
-            break;
-        }
-    }
-
-    return 1;
-}
-
 /***********************
  * FILE - End
  ***********************/
@@ -140,7 +140,7 @@ int main() {
         return 0;
     }
 
-    int isParsed = parse_file(&file);
+    int isParsed = parse_data(&file);
 
     if (!isParsed) {
         fclose(file);
