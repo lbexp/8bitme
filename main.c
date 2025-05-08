@@ -31,6 +31,16 @@ const uint8_t PNG_SIGNATURE[8] = {137, 80, 78, 71, 13, 10, 26, 10};
  ***********************/
 
 /*
+ * read_big_endian
+ */
+uint32_t read_big_endian(FILE *file) {
+    uint8_t b[4];
+    fread(b, 1, 4, file);
+
+    return (b[0] << 24) | (b[1] << 16) | (b[2] << 8) | b[3];
+}
+
+/*
  * create_img_data
  */
 void create_img_data() {}
@@ -69,9 +79,6 @@ int validate_file_ext(char fileName[64]) {
 /*
  * read_file
  */
-void read_file(FILE **file, char name[64]) {
-    *file = fopen(name, "rb");
-}
 
 int parse_file(FILE **file) {
     uint8_t signature[8];
@@ -81,6 +88,19 @@ int parse_file(FILE **file) {
     if (memcmp(PNG_SIGNATURE, signature, 8)) {
         printf("Wrong PNG signature!\n");
         return 0;
+    }
+
+    while (!feof(*file)) {
+        uint32_t length = read_big_endian(*file);
+        char type[5] = {0};
+        fread(type, 1, 4, *file);
+
+        printf("Chunk: %s, Length: %d\n", type, length);
+
+        fseek(*file, length + 4, SEEK_CUR);
+        if (strcmp(type, "IEND") == 0) {
+            break;
+        }
     }
 
     return 1;
@@ -102,7 +122,7 @@ int main() {
         return 0;
     }
 
-    read_file(&file, fileName);
+    file = fopen(fileName, "rb");
 
     if (!file) {
         printf("Can't find file named %s", fileName);
@@ -112,8 +132,11 @@ int main() {
     int isParsed = parse_file(&file);
 
     if (!isParsed) {
+        fclose(file);
         return 0;
     }
+
+    fclose(file);
 
     return 0;
 }
