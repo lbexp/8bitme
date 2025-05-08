@@ -46,7 +46,7 @@ uint32_t read_big_endian(FILE *file) {
 int validate_signature(FILE *file) {
     uint8_t *signature[8];
 
-    fread(signature, 8, 1, file);
+    fread(signature, 1, 8, file);
 
     if (memcmp(signature, PNG_SIGNATURE, 8)) {
         printf("Wrong PNG signature!\n");
