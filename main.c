@@ -58,6 +58,25 @@ int validate_signature(FILE *file) {
 }
 
 /*
+ * get_chunks
+ */
+void get_chunks(FILE *file) {
+    while (!feof(file)) {
+        uint32_t length = read_big_endian(file);
+        char type[5] = {0};
+
+        fread(type, 1, 4, file);
+
+        printf("Chunk: %s, Length: %d\n", type, length);
+
+        fseek(file, length + 4, SEEK_CUR);
+        if (strcmp(type, "IEND") == 0) {
+            break;
+        }
+    }
+}
+
+/*
  * parse_data
  * PNG binary data structure:
  * - 8-byte signature
@@ -72,18 +91,7 @@ int parse_data(FILE **file) {
         return 0;
     }
 
-    while (!feof(*file)) {
-        uint32_t length = read_big_endian(*file);
-        char type[5] = {0};
-        fread(type, 1, 4, *file);
-
-        printf("Chunk: %s, Length: %d\n", type, length);
-
-        fseek(*file, length + 4, SEEK_CUR);
-        if (strcmp(type, "IEND") == 0) {
-            break;
-        }
-    }
+    get_chunks(*file);
 
     return 1;
 }
