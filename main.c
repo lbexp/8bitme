@@ -3,7 +3,7 @@
 #include <string.h>
 
 /***********************
- * Structs - Start
+ * STRUCTS - Start
  ***********************/
 
 #pragma pack(push, 1)
@@ -13,17 +13,17 @@
 #pragma pack(pop)
 
 /***********************
- * Structs - End
+ * STRUCTS - End
  ***********************/
 
 /***********************
- * Constants - Start
+ * CONSTANTS - Start
  ***********************/
 
 const uint8_t PNG_SIGNATURE[8] = {137, 80, 78, 71, 13, 10, 26, 10};
 
 /***********************
- * Constants - End
+ * CONSTANTS - End
  ***********************/
 
 /***********************
