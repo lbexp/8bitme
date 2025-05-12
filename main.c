@@ -10,6 +10,16 @@
 /* #pragma pack(push, 1) */
 
 typedef struct {
+    uint32_t witdth;
+    uint32_t height;
+    uint8_t bitDepth;
+    uint8_t colorType;
+    uint8_t compressionMethod;
+    uint8_t filterMethod;
+    uint8_t interfaceMethod;
+} IHDRData;
+
+typedef struct {
     uint32_t length;
     char type[5];
     uint8_t *data;
@@ -66,6 +76,23 @@ int validate_signature(FILE *file) {
     }
 
     return 1;
+}
+
+/*
+ * get_ihdr_data
+ */
+void get_ihdr_data(IHDRData *ihdr, PNGChunk *chunk) {
+    uint8_t *chunkData = chunk->data;
+
+    ihdr->witdth = (chunkData[0] << 24) | (chunkData[1] << 16) |
+                   (chunkData[2] << 8) | chunkData[3];
+    ihdr->height = (chunkData[4] << 24) | (chunkData[5] << 16) |
+                   (chunkData[6] << 8) | chunkData[7];
+    ihdr->bitDepth = chunkData[8];
+    ihdr->colorType = chunkData[9];
+    ihdr->compressionMethod = chunkData[10];
+    ihdr->filterMethod = chunkData[11];
+    ihdr->interfaceMethod = chunkData[12];
 }
 
 /*
@@ -143,6 +170,9 @@ int parse_data(FILE **file) {
 
     uint8_t *compressedData = NULL;
     get_compressed_data(compressedData, &chunks);
+
+    IHDRData ihdr;
+    get_ihdr_data(&ihdr, &chunks.value[0]);
 
     return 1;
 }
