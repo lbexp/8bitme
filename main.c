@@ -92,8 +92,8 @@ void get_chunks(PNGChunks *chunks, FILE *file) {
 
         fseek(file, 4, SEEK_CUR); // SKIP CRC on chunk
 
-        if (chunks->used == chunks->size) {
-            chunks->size++;
+        if (chunks->used >= chunks->size) {
+            chunks->size = chunks->size ? chunks->size * 2 : 8;
             chunks->value =
                 realloc(chunks->value, chunks->size * sizeof(PNGChunk));
         }
@@ -102,6 +102,23 @@ void get_chunks(PNGChunks *chunks, FILE *file) {
 
         if (strcmp(chunk.type, "IEND") == 0) {
             break;
+        }
+    }
+}
+
+/*
+ * get_compressed_data
+ */
+void get_compressed_data(uint8_t *compressedData, PNGChunks *chunks) {
+    size_t size = 0;
+
+    for (int i = 0; i < chunks->used; i++) {
+        if (strcmp(chunks->value[i].type, "IDAT") == 0) {
+            compressedData =
+                realloc(compressedData, size + chunks->value[i].length);
+            memcpy(compressedData + size, chunks->value[i].data,
+                   chunks->value[i].length);
+            size += chunks->value[i].length;
         }
     }
 }
@@ -123,6 +140,9 @@ int parse_data(FILE **file) {
 
     PNGChunks chunks;
     get_chunks(&chunks, *file);
+
+    uint8_t *compressedData = NULL;
+    get_compressed_data(compressedData, &chunks);
 
     return 1;
 }
