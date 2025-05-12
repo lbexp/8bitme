@@ -72,7 +72,7 @@ int validate_signature(FILE *file) {
  * get_chunks
  */
 void get_chunks(PNGChunks *chunks, FILE *file) {
-    chunks->value = malloc(0);
+    chunks->value = NULL;
     chunks->used = 0;
     chunks->size = 0;
 
