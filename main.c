@@ -1,16 +1,26 @@
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 /***********************
  * STRUCTS - Start
  ***********************/
 
-#pragma pack(push, 1)
+/* #pragma pack(push, 1) */
 
-// Placeholder
+typedef struct {
+    uint32_t length;
+    char type[5];
+} PNGChunk;
 
-#pragma pack(pop)
+typedef struct {
+    PNGChunk *value;
+    size_t size;
+    size_t used;
+} PNGChunks;
+
+/* #pragma pack(pop) */
 
 /***********************
  * STRUCTS - End
@@ -60,20 +70,40 @@ int validate_signature(FILE *file) {
 /*
  * get_chunks
  */
-void get_chunks(FILE *file) {
+PNGChunks get_chunks(FILE *file) {
+    PNGChunks chunks;
+    PNGChunks *chunksptr = &chunks;
+
+    chunksptr->value = malloc(0);
+    chunksptr->used = 0;
+    chunksptr->size = 0;
+
     while (!feof(file)) {
-        uint32_t length = read_big_endian(file);
-        char type[5] = {0};
+        PNGChunk chunk;
 
-        fread(type, 1, 4, file);
+        chunk.length = read_big_endian(file);
 
-        printf("Chunk: %s, Length: %d\n", type, length);
+        fread(chunk.type, 1, 4, file);
+        chunk.type[4] = '\0';
 
-        fseek(file, length + 4, SEEK_CUR);
-        if (strcmp(type, "IEND") == 0) {
+        printf("Chunk: %s, Length: %d\n", chunk.type, chunk.length);
+
+        fseek(file, chunk.length + 4, SEEK_CUR);
+
+        if (chunksptr->used == chunks.size) {
+            chunksptr->size++;
+            chunksptr->value =
+                realloc(chunksptr->value, chunks.size * sizeof(PNGChunk));
+        }
+
+        chunksptr->value[chunks.used++] = chunk;
+
+        if (strcmp(chunk.type, "IEND") == 0) {
             break;
         }
     }
+
+    return chunks;
 }
 
 /*
@@ -91,7 +121,7 @@ int parse_data(FILE **file) {
         return 0;
     }
 
-    get_chunks(*file);
+    PNGChunks chunks = get_chunks(*file);
 
     return 1;
 }
