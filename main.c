@@ -12,6 +12,7 @@
 typedef struct {
     uint32_t length;
     char type[5];
+    uint8_t *data;
 } PNGChunk;
 
 typedef struct {
@@ -70,13 +71,10 @@ int validate_signature(FILE *file) {
 /*
  * get_chunks
  */
-PNGChunks get_chunks(FILE *file) {
-    PNGChunks chunks;
-    PNGChunks *chunksptr = &chunks;
-
-    chunksptr->value = malloc(0);
-    chunksptr->used = 0;
-    chunksptr->size = 0;
+void get_chunks(PNGChunks *chunks, FILE *file) {
+    chunks->value = malloc(0);
+    chunks->used = 0;
+    chunks->size = 0;
 
     while (!feof(file)) {
         PNGChunk chunk;
@@ -86,24 +84,26 @@ PNGChunks get_chunks(FILE *file) {
         fread(chunk.type, 1, 4, file);
         chunk.type[4] = '\0';
 
-        printf("Chunk: %s, Length: %d\n", chunk.type, chunk.length);
+        chunk.data = malloc(chunk.length);
+        fread(chunk.data, 1, chunk.length, file);
 
-        fseek(file, chunk.length + 4, SEEK_CUR);
+        printf("Chunk: %s, Length: %d, Data: %p\n", chunk.type, chunk.length,
+               chunk.data);
 
-        if (chunksptr->used == chunks.size) {
-            chunksptr->size++;
-            chunksptr->value =
-                realloc(chunksptr->value, chunks.size * sizeof(PNGChunk));
+        fseek(file, 4, SEEK_CUR); // SKIP CRC on chunk
+
+        if (chunks->used == chunks->size) {
+            chunks->size++;
+            chunks->value =
+                realloc(chunks->value, chunks->size * sizeof(PNGChunk));
         }
 
-        chunksptr->value[chunks.used++] = chunk;
+        chunks->value[chunks->used++] = chunk;
 
         if (strcmp(chunk.type, "IEND") == 0) {
             break;
         }
     }
-
-    return chunks;
 }
 
 /*
@@ -121,7 +121,8 @@ int parse_data(FILE **file) {
         return 0;
     }
 
-    PNGChunks chunks = get_chunks(*file);
+    PNGChunks chunks;
+    get_chunks(&chunks, *file);
 
     return 1;
 }
