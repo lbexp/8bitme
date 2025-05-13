@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <zlib.h>
 
 /***********************
  * STRUCTS - Start
@@ -10,7 +11,7 @@
 /* #pragma pack(push, 1) */
 
 typedef struct {
-    uint32_t witdth;
+    uint32_t width;
     uint32_t height;
     uint8_t bitDepth;
     uint8_t colorType;
@@ -84,8 +85,8 @@ int validate_signature(FILE *file) {
 void get_ihdr_data(IHDRData *ihdr, PNGChunk *chunk) {
     uint8_t *chunkData = chunk->data;
 
-    ihdr->witdth = (chunkData[0] << 24) | (chunkData[1] << 16) |
-                   (chunkData[2] << 8) | chunkData[3];
+    ihdr->width = (chunkData[0] << 24) | (chunkData[1] << 16) |
+                  (chunkData[2] << 8) | chunkData[3];
     ihdr->height = (chunkData[4] << 24) | (chunkData[5] << 16) |
                    (chunkData[6] << 8) | chunkData[7];
     ihdr->bitDepth = chunkData[8];
