@@ -153,35 +153,35 @@ size_t get_compressed_data(uint8_t **compressedData, PNGChunks *chunks) {
     return size;
 }
 
-/*
- * get_uncompressed_size
- */
-uLongf get_uncompressed_size(IHDRData *ihdr) {
-    int bytesPerPixel;
-
-    switch (ihdr->colorType) {
+int get_bytes_per_pixel(uint8_t colorType) {
+    switch (colorType) {
     case 0: // Grayscale
-        bytesPerPixel = 1;
+        return 1;
         break;
     case 2: // RGB
-        bytesPerPixel = 3;
+        return 3;
         break;
     case 3: // Indexed
-        bytesPerPixel = 1;
+        return 1;
         break;
     case 4: // Grayscale + alpha
-        bytesPerPixel = 2;
+        return 2;
         break;
     case 6: // RGBA
-        bytesPerPixel = 4;
-        break;
+        return 4;
     default:
         printf("Unsupported color type");
         return 0;
     }
+}
 
+/*
+ * get_uncompressed_size
+ */
+uLongf get_uncompressed_size(IHDRData *ihdr) {
     // Row size (width * bytesPerPixel) * height
-    return ((ihdr->width * bytesPerPixel) + 1) * ihdr->height;
+    return ((ihdr->width * get_bytes_per_pixel(ihdr->colorType)) + 1) *
+           ihdr->height;
 }
 
 /*
