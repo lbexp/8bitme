@@ -178,10 +178,10 @@ int get_bytes_per_pixel(uint8_t colorType) {
 /*
  * get_uncompressed_size
  */
-uLongf get_uncompressed_size(IHDRData *ihdr) {
+uLongf get_uncompressed_size(uint32_t width, uint32_t height,
+                             uint8_t bytesPerPixel) {
     // Row size (width * bytesPerPixel) * height
-    return ((ihdr->width * get_bytes_per_pixel(ihdr->colorType)) + 1) *
-           ihdr->height;
+    return ((width * bytesPerPixel) + 1) * height;
 }
 
 /*
@@ -208,7 +208,10 @@ int parse_data(FILE **file) {
     IHDRData ihdr;
     get_ihdr_data(&ihdr, &chunks.value[0]);
 
-    uLongf uncompressedSize = get_uncompressed_size(&ihdr);
+    int bytesPerPixel = get_bytes_per_pixel(ihdr.colorType);
+
+    uLongf uncompressedSize =
+        get_uncompressed_size(ihdr.width, ihdr.height, bytesPerPixel);
     uint8_t *uncompressedData = malloc(uncompressedSize);
 
     int result = uncompress(uncompressedData, &uncompressedSize, compressedData,
