@@ -137,18 +137,20 @@ void get_chunks(PNGChunks *chunks, FILE *file) {
 /*
  * get_compressed_data
  */
-void get_compressed_data(uint8_t *compressedData, PNGChunks *chunks) {
+size_t get_compressed_data(uint8_t **compressedData, PNGChunks *chunks) {
     size_t size = 0;
 
     for (int i = 0; i < chunks->used; i++) {
         if (strcmp(chunks->value[i].type, "IDAT") == 0) {
-            compressedData =
-                realloc(compressedData, size + chunks->value[i].length);
-            memcpy(compressedData + size, chunks->value[i].data,
+            *compressedData =
+                realloc(*compressedData, size + chunks->value[i].length);
+            memcpy(*compressedData + size, chunks->value[i].data,
                    chunks->value[i].length);
             size += chunks->value[i].length;
         }
     }
+
+    return size;
 }
 
 /*
@@ -170,10 +172,50 @@ int parse_data(FILE **file) {
     get_chunks(&chunks, *file);
 
     uint8_t *compressedData = NULL;
-    get_compressed_data(compressedData, &chunks);
+    size_t compressedSize = get_compressed_data(&compressedData, &chunks);
 
     IHDRData ihdr;
     get_ihdr_data(&ihdr, &chunks.value[0]);
+
+    int bytesPerPixel;
+    switch (ihdr.colorType) {
+    case 0: // Grayscale
+        bytesPerPixel = 1;
+        break;
+    case 2: // RGB
+        bytesPerPixel = 3;
+        break;
+    case 3: // Indexed
+        bytesPerPixel = 1;
+        break;
+    case 4: // Grayscale + alpha
+        bytesPerPixel = 2;
+        break;
+    case 6: // RGBA
+        bytesPerPixel = 4;
+        break;
+    default:
+        printf("Unsupported color type");
+        return 0;
+    }
+
+    // Row size (width * bytesPerPixel) * height
+    uLongf uncompressedSize = ((ihdr.width * bytesPerPixel) + 1) * ihdr.height;
+    uint8_t *uncompressedData = malloc(uncompressedSize);
+
+    printf("Compressed data (first 16 bytes): ");
+    for (int i = 0; i < 16 && i < compressedSize; i++) {
+        printf("%02X ", compressedData[0]);
+    }
+    printf("\n");
+
+    int result = uncompress(uncompressedData, &uncompressedSize, compressedData,
+                            compressedSize);
+
+    if (result != Z_OK) {
+        fprintf(stderr, "Failed to decompress PNG data: %d\n", result);
+        return 0;
+    }
 
     return 1;
 }
