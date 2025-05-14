@@ -154,6 +154,37 @@ size_t get_compressed_data(uint8_t **compressedData, PNGChunks *chunks) {
 }
 
 /*
+ * get_uncompressed_size
+ */
+uLongf get_uncompressed_size(IHDRData *ihdr) {
+    int bytesPerPixel;
+
+    switch (ihdr->colorType) {
+    case 0: // Grayscale
+        bytesPerPixel = 1;
+        break;
+    case 2: // RGB
+        bytesPerPixel = 3;
+        break;
+    case 3: // Indexed
+        bytesPerPixel = 1;
+        break;
+    case 4: // Grayscale + alpha
+        bytesPerPixel = 2;
+        break;
+    case 6: // RGBA
+        bytesPerPixel = 4;
+        break;
+    default:
+        printf("Unsupported color type");
+        return 0;
+    }
+
+    // Row size (width * bytesPerPixel) * height
+    return ((ihdr->width * bytesPerPixel) + 1) * ihdr->height;
+}
+
+/*
  * parse_data
  * PNG binary data structure:
  * - 8-byte signature
@@ -177,37 +208,8 @@ int parse_data(FILE **file) {
     IHDRData ihdr;
     get_ihdr_data(&ihdr, &chunks.value[0]);
 
-    int bytesPerPixel;
-    switch (ihdr.colorType) {
-    case 0: // Grayscale
-        bytesPerPixel = 1;
-        break;
-    case 2: // RGB
-        bytesPerPixel = 3;
-        break;
-    case 3: // Indexed
-        bytesPerPixel = 1;
-        break;
-    case 4: // Grayscale + alpha
-        bytesPerPixel = 2;
-        break;
-    case 6: // RGBA
-        bytesPerPixel = 4;
-        break;
-    default:
-        printf("Unsupported color type");
-        return 0;
-    }
-
-    // Row size (width * bytesPerPixel) * height
-    uLongf uncompressedSize = ((ihdr.width * bytesPerPixel) + 1) * ihdr.height;
+    uLongf uncompressedSize = get_uncompressed_size(&ihdr);
     uint8_t *uncompressedData = malloc(uncompressedSize);
-
-    printf("Compressed data (first 16 bytes): ");
-    for (int i = 0; i < 16 && i < compressedSize; i++) {
-        printf("%02X ", compressedData[0]);
-    }
-    printf("\n");
 
     int result = uncompress(uncompressedData, &uncompressedSize, compressedData,
                             compressedSize);
