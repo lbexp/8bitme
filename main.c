@@ -185,6 +185,88 @@ uLongf get_uncompressed_size(uint32_t width, uint32_t height,
 }
 
 /*
+ * get_pixels
+ */
+uint8_t *get_pixels(uint8_t *data, uint32_t width, uint32_t height,
+                    uint8_t bytesPerPixel) {
+    int scanlineLength = width * bytesPerPixel;
+    int stride = scanlineLength + 1; // +1 for filter byte
+
+    uint8_t *pixels = malloc(scanlineLength * width);
+
+    for (int y = 0; y < height; y++) {
+        uint8_t *scanline = data + (y * stride);
+        uint8_t filterType = scanline[0];
+        uint8_t *currentFiltered = scanline + 1;
+
+        uint8_t *prevScanline = y > 0 ? data + ((y - 1) * stride) : NULL;
+        uint8_t *prevFiltered = y > 0 ? prevScanline + 1 : NULL;
+
+        uint8_t *output = pixels + (y * scanlineLength);
+
+        switch (filterType) {
+        case 0: // None
+            memcpy(output, currentFiltered, scanlineLength);
+            break;
+        case 1: // Sub
+            for (int i = 0; i < scanlineLength; i++) {
+                uint8_t left =
+                    i >= bytesPerPixel ? output[i - bytesPerPixel] : 0;
+                output[i] = currentFiltered[i] + left;
+            }
+            break;
+        case 2: // Up
+            for (int i = 0; i < scanlineLength; i++) {
+                uint8_t up = prevFiltered ? prevFiltered[i] : 0;
+                output[i] = currentFiltered[i] + up;
+            }
+            break;
+        case 3: // Average
+            for (int i = 0; i < scanlineLength; i++) {
+                uint8_t left =
+                    i >= bytesPerPixel ? output[i - bytesPerPixel] : 0;
+                uint8_t up = prevFiltered ? prevFiltered[i] : 0;
+                uint8_t avg = (left + up) / 2;
+                output[i] = currentFiltered[i] + avg;
+            }
+            break;
+        case 4: // Paeth
+            for (int i = 0; i < scanlineLength; i++) {
+                uint8_t left =
+                    i >= bytesPerPixel ? output[i - bytesPerPixel] : 0;
+                uint8_t up = prevFiltered ? prevFiltered[i] : 0;
+                uint8_t upLeft = prevFiltered && i >= bytesPerPixel
+                                     ? prevFiltered[i - bytesPerPixel]
+                                     : 0;
+
+                // Calculations for getting the paeth value
+                int p = left + up - upLeft;
+                int pLeft = abs(p - left);
+                int pUp = abs(p - up);
+                int pUpLeft = abs(p - upLeft);
+
+                uint8_t paeth;
+                if (pLeft <= pUp && pLeft <= pUpLeft) {
+                    paeth = left;
+                } else if (pUp <= pUpLeft) {
+                    paeth = up;
+                } else {
+                    paeth = upLeft;
+                }
+
+                output[i] = currentFiltered[i] + paeth;
+            }
+            break;
+        default:
+            printf("Unsupported filter type: %d", filterType);
+            break;
+        }
+    }
+
+    return pixels;
+}
+
+/*
  * parse_data
  * PNG binary data structure:
  * - 8-byte signature
@@ -221,6 +303,9 @@ int parse_data(FILE **file) {
         fprintf(stderr, "Failed to decompress PNG data: %d\n", result);
         return 0;
     }
+
+    uint8_t *pixels =
+        get_pixels(uncompressedData, ihdr.width, ihdr.height, bytesPerPixel);
 
     return 1;
 }
