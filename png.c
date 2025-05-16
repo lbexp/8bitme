@@ -56,9 +56,6 @@ void get_chunks(PNGChunks *chunks, FILE *file) {
         chunk.data = malloc(chunk.length);
         fread(chunk.data, 1, chunk.length, file);
 
-        printf("Chunk: %s, Length: %d, Data: %p\n", chunk.type, chunk.length,
-               chunk.data);
-
         fseek(file, 4, SEEK_CUR); // SKIP CRC on chunk
 
         if (chunks->used >= chunks->size) {
