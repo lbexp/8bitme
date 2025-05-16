@@ -2,9 +2,6 @@
 
 const uint8_t PNG_SIGNATURE[8] = {137, 80, 78, 71, 13, 10, 26, 10};
 
-/*
- * read_big_endian
- */
 uint32_t read_big_endian(FILE *file) {
     uint8_t b[4];
     fread(b, 1, 4, file);
@@ -12,9 +9,6 @@ uint32_t read_big_endian(FILE *file) {
     return (b[0] << 24) | (b[1] << 16) | (b[2] << 8) | b[3];
 }
 
-/*
- * validate_signature
- */
 int validate_signature(FILE *file) {
     uint8_t *signature[8];
 
@@ -29,9 +23,6 @@ int validate_signature(FILE *file) {
     return 1;
 }
 
-/*
- * get_ihdr_data
- */
 void get_ihdr_data(IHDRData *ihdr, PNGChunk *chunk) {
     uint8_t *chunkData = chunk->data;
 
@@ -46,9 +37,6 @@ void get_ihdr_data(IHDRData *ihdr, PNGChunk *chunk) {
     ihdr->interfaceMethod = chunkData[12];
 }
 
-/*
- * get_chunks
- */
 void get_chunks(PNGChunks *chunks, FILE *file) {
     chunks->value = NULL;
     chunks->used = 0;
@@ -84,9 +72,6 @@ void get_chunks(PNGChunks *chunks, FILE *file) {
     }
 }
 
-/*
- * get_compressed_data
- */
 size_t get_compressed_data(uint8_t **compressedData, PNGChunks *chunks) {
     size_t size = 0;
 
@@ -125,18 +110,12 @@ int get_bytes_per_pixel(uint8_t colorType) {
     }
 }
 
-/*
- * get_uncompressed_size
- */
 uLongf get_uncompressed_size(uint32_t width, uint32_t height,
                              uint8_t bytesPerPixel) {
     // Row size (width * bytesPerPixel) * height
     return ((width * bytesPerPixel) + 1) * height;
 }
 
-/*
- * get_pixels
- */
 uint8_t *get_pixels(uint8_t *data, uint32_t width, uint32_t height,
                     uint8_t bytesPerPixel) {
     int scanlineLength = width * bytesPerPixel;
@@ -216,16 +195,6 @@ uint8_t *get_pixels(uint8_t *data, uint32_t width, uint32_t height,
     return pixels;
 }
 
-/*
- * parse_data
- * PNG binary data structure:
- * - 8-byte signature
- * - Chunks data:
- *   - 4-byte length
- *   - 4-byte chunk type
- *   - N-byte data
- *   - 4-byte CRC
- */
 int parse_data(FILE **file) {
     if (!validate_signature(*file)) {
         return 0;

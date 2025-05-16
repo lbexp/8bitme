@@ -1,8 +1,5 @@
 #include "file.h"
 
-/*
- * validate_file_ext
- */
 int validate_file_ext(char fileName[64]) {
     const char formats[1][8] = {
         ".png",
