@@ -1,4 +1,7 @@
 #include "png.h"
+#include <stdlib.h>
+#include <string.h>
+#include <zlib.h>
 
 const uint8_t PNG_SIGNATURE[8] = {137, 80, 78, 71, 13, 10, 26, 10};
 

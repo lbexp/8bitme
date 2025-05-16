@@ -1,8 +1,6 @@
 #ifndef FILE_H
 #define FILE_H
 
-#include <string.h>
-
 /*
  * validate_file_ext
  *

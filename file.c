@@ -1,4 +1,5 @@
 #include "file.h"
+#include <string.h>
 
 int validate_file_ext(char fileName[64]) {
     const char formats[1][8] = {
