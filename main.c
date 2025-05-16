@@ -28,6 +28,8 @@ int main() {
         return 0;
     }
 
+    printf("Success");
+
     fclose(file);
 
     return 0;
