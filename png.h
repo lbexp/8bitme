@@ -26,6 +26,11 @@ typedef struct {
     size_t used;
 } PNGChunks;
 
+typedef struct {
+    IHDRData ihdr;
+    uint8_t *pixels;
+} PNGDecoded;
+
 extern const uint8_t PNG_SIGNATURE[8];
 
 /*
@@ -39,6 +44,6 @@ extern const uint8_t PNG_SIGNATURE[8];
  *   - N-byte data
  *   - 4-byte CRC (Ignored)
  */
-int decode_data(FILE **file);
+PNGDecoded *decode_data(FILE **file);
 
 #endif

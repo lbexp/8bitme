@@ -195,10 +195,12 @@ uint8_t *get_pixels(uint8_t *data, uint32_t width, uint32_t height,
     return pixels;
 }
 
-int decode_data(FILE **file) {
+PNGDecoded *decode_data(FILE **file) {
     if (!validate_signature(*file)) {
-        return 0;
+        return NULL;
     }
+
+    PNGDecoded *decoded;
 
     PNGChunks chunks;
     get_chunks(&chunks, *file);
@@ -206,13 +208,12 @@ int decode_data(FILE **file) {
     uint8_t *compressedData = NULL;
     size_t compressedSize = get_compressed_data(&compressedData, &chunks);
 
-    IHDRData ihdr;
-    get_ihdr_data(&ihdr, &chunks.value[0]);
+    get_ihdr_data(&decoded->ihdr, &chunks.value[0]);
 
-    int bytesPerPixel = get_bytes_per_pixel(ihdr.colorType);
+    int bytesPerPixel = get_bytes_per_pixel(decoded->ihdr.colorType);
 
-    uLongf uncompressedSize =
-        get_uncompressed_size(ihdr.width, ihdr.height, bytesPerPixel);
+    uLongf uncompressedSize = get_uncompressed_size(
+        decoded->ihdr.width, decoded->ihdr.height, bytesPerPixel);
     uint8_t *uncompressedData = malloc(uncompressedSize);
 
     int result = uncompress(uncompressedData, &uncompressedSize, compressedData,
@@ -220,11 +221,11 @@ int decode_data(FILE **file) {
 
     if (result != Z_OK) {
         fprintf(stderr, "Failed to decompress PNG data: %d\n", result);
-        return 0;
+        return NULL;
     }
 
-    uint8_t *pixels =
-        get_pixels(uncompressedData, ihdr.width, ihdr.height, bytesPerPixel);
+    decoded->pixels = get_pixels(uncompressedData, decoded->ihdr.width,
+                                 decoded->ihdr.height, bytesPerPixel);
 
-    return 1;
+    return decoded;
 }

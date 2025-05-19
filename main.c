@@ -21,9 +21,9 @@ int main() {
         return 0;
     }
 
-    int isDecoded = decode_data(&file);
+    PNGDecoded *decoded = decode_data(&file);
 
-    if (!isDecoded) {
+    if (decoded == NULL) {
         fclose(file);
         return 0;
     }
