@@ -21,9 +21,9 @@ int main() {
         return 0;
     }
 
-    int isParsed = parse_data(&file);
+    int isDecoded = decode_data(&file);
 
-    if (!isParsed) {
+    if (!isDecoded) {
         fclose(file);
         return 0;
     }

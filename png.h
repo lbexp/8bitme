@@ -29,7 +29,7 @@ typedef struct {
 extern const uint8_t PNG_SIGNATURE[8];
 
 /*
- * parse_data
+ * decode_data
  *
  * PNG binary data structure:
  * - 8-byte signature
@@ -39,6 +39,6 @@ extern const uint8_t PNG_SIGNATURE[8];
  *   - N-byte data
  *   - 4-byte CRC (Ignored)
  */
-int parse_data(FILE **file);
+int decode_data(FILE **file);
 
 #endif

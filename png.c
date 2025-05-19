@@ -195,7 +195,7 @@ uint8_t *get_pixels(uint8_t *data, uint32_t width, uint32_t height,
     return pixels;
 }
 
-int parse_data(FILE **file) {
+int decode_data(FILE **file) {
     if (!validate_signature(*file)) {
         return 0;
     }
