@@ -229,3 +229,53 @@ PNGDecoded *decode_data(FILE **file) {
 
     return decoded;
 }
+
+int generate_uncompressed_data(uint8_t *uncompressedData, uint8_t *pixels) {
+    // TODO: Add logic
+    return 1;
+}
+
+PNGChunks generate_chunks(uint8_t *compresedData) {
+    PNGChunks chunks;
+
+    // TODO Add logic
+
+    return chunks;
+};
+
+int encode_data(FILE **file, PNGDecoded *decoded) {
+    int bytesPerPixel = get_bytes_per_pixel(decoded->ihdr.colorType);
+
+    // Generate uncompressed data
+    uLongf uncompressedSize = get_uncompressed_size(
+        decoded->ihdr.width, decoded->ihdr.height, bytesPerPixel);
+    uint8_t *uncompressedData = malloc(uncompressedSize);
+    int uncompressResult =
+        generate_uncompressed_data(uncompressedData, decoded->pixels);
+
+    if (!uncompressResult) {
+        printf("Failed to generate uncompressed data");
+        return 0;
+    }
+
+    // Generate compressed data
+    uint8_t *compressedData = NULL;
+    // TODO: Add logic to get compressedSize
+    size_t compressedSize = 0;
+    int compressResult = compress(compressedData, &compressedSize,
+                                  uncompressedData, uncompressedSize);
+
+    if (!compressResult) {
+        printf("Failed to compress data");
+        return 0;
+    }
+
+    // Generate chunks
+    PNGChunks chunks;
+    generate_chunks(compressedData);
+
+    // Put chunks into file
+    // TODO: Add logic
+
+    return 1;
+}

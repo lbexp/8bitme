@@ -46,4 +46,6 @@ extern const uint8_t PNG_SIGNATURE[8];
  */
 PNGDecoded *decode_data(FILE **file);
 
+int encode_data(FILE **file, PNGDecoded *decoded);
+
 #endif
