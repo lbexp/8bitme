@@ -196,7 +196,10 @@ uint8_t *get_pixels(uint8_t *data, uint32_t width, uint32_t height,
 }
 
 int generate_filtered_data(uint8_t *uncompressedData, uint8_t *pixels,
-                           uint32_t width, int bytesPerPixel) {
+                           uint32_t width, uint32_t height, int bytesPerPixel) {
+    int scanlineLength = width * bytesPerPixel;
+    int stride = scanlineLength + 1;
+
     return 1;
 }
 
@@ -264,7 +267,8 @@ int encode_data(FILE **file, PNGDecoded *decoded) {
         decoded->ihdr.width, decoded->ihdr.height, bytesPerPixel);
     uint8_t *uncompressedData = malloc(uncompressedSize);
     int uncompressResult = generate_filtered_data(
-        uncompressedData, decoded->pixels, decoded->ihdr.width, bytesPerPixel);
+        uncompressedData, decoded->pixels, decoded->ihdr.width,
+        decoded->ihdr.height, bytesPerPixel);
 
     if (!uncompressResult) {
         printf("Failed to generate uncompressed data");
