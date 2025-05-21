@@ -195,12 +195,18 @@ uint8_t *get_pixels(uint8_t *data, uint32_t width, uint32_t height,
     return pixels;
 }
 
-int generate_filtered_data(uint8_t *uncompressedData, uint8_t *pixels,
+int generate_filtered_data(uint8_t *filteredData, uint8_t *pixels,
                            uint32_t width, uint32_t height, int bytesPerPixel) {
     int scanlineLength = width * bytesPerPixel;
     int stride = scanlineLength + 1;
 
     for (int y = 0; y < height; y++) {
+        uint8_t *scanline = pixels + (y * stride);
+        // TODO: Add other filter type to get more compressed data
+        // Hardcoded to 0 for MVP
+        uint8_t filterType = 0;
+
+        memcpy(filteredData, scanline, stride);
     }
 
     return 1;
@@ -252,16 +258,16 @@ PNGChunks generate_chunks(uint8_t *compresedData) {
 int encode_data(FILE **file, PNGDecoded *decoded) {
     int bytesPerPixel = get_bytes_per_pixel(decoded->ihdr.colorType);
 
-    // Generate uncompressed data
-    uLongf uncompressedSize = get_uncompressed_size(
+    // Generate filtered data
+    uLongf filteredSize = get_uncompressed_size(
         decoded->ihdr.width, decoded->ihdr.height, bytesPerPixel);
-    uint8_t *uncompressedData = malloc(uncompressedSize);
-    int uncompressResult = generate_filtered_data(
-        uncompressedData, decoded->pixels, decoded->ihdr.width,
+    uint8_t *filteredData = malloc(filteredSize);
+    int filteredResult = generate_filtered_data(
+        filteredData, decoded->pixels, decoded->ihdr.width,
         decoded->ihdr.height, bytesPerPixel);
 
-    if (!uncompressResult) {
-        printf("Failed to generate uncompressed data");
+    if (!filteredResult) {
+        printf("Failed to generate filtered data");
         return 0;
     }
 
@@ -269,8 +275,8 @@ int encode_data(FILE **file, PNGDecoded *decoded) {
     uint8_t *compressedData = NULL;
     // TODO: Add logic to get compressedSize
     size_t compressedSize = 0;
-    int compressResult = compress(compressedData, &compressedSize,
-                                  uncompressedData, uncompressedSize);
+    int compressResult =
+        compress(compressedData, &compressedSize, filteredData, filteredSize);
 
     if (!compressResult) {
         printf("Failed to compress data");
