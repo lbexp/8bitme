@@ -272,9 +272,8 @@ int encode_data(FILE **file, PNGDecoded *decoded) {
     }
 
     // Generate compressed data
-    uint8_t *compressedData = NULL;
-    // TODO: Add logic to get compressedSize
-    size_t compressedSize = 0;
+    uLongf compressedSize = compressBound(filteredSize);
+    uint8_t *compressedData = malloc(compressedSize);
     int compressResult =
         compress(compressedData, &compressedSize, filteredData, filteredSize);
 
