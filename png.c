@@ -195,6 +195,12 @@ uint8_t *get_pixels(uint8_t *data, uint32_t width, uint32_t height,
     return pixels;
 }
 
+int generate_filtered_data(uint8_t *uncompressedData, uint8_t *pixels,
+                           int bytesPerPixel) {
+    // TODO: Add logic
+    return 1;
+}
+
 PNGDecoded *decode_data(FILE **file) {
     if (!validate_signature(*file)) {
         return NULL;
@@ -230,11 +236,6 @@ PNGDecoded *decode_data(FILE **file) {
     return decoded;
 }
 
-int generate_filtered_data(uint8_t *uncompressedData, uint8_t *pixels) {
-    // TODO: Add logic
-    return 1;
-}
-
 PNGChunks generate_chunks(uint8_t *compresedData) {
     /* size_t size = 0; */
     /**/
@@ -263,8 +264,8 @@ int encode_data(FILE **file, PNGDecoded *decoded) {
     uLongf uncompressedSize = get_uncompressed_size(
         decoded->ihdr.width, decoded->ihdr.height, bytesPerPixel);
     uint8_t *uncompressedData = malloc(uncompressedSize);
-    int uncompressResult =
-        generate_filtered_data(uncompressedData, decoded->pixels);
+    int uncompressResult = generate_filtered_data(
+        uncompressedData, decoded->pixels, bytesPerPixel);
 
     if (!uncompressResult) {
         printf("Failed to generate uncompressed data");
