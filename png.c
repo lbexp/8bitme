@@ -230,12 +230,25 @@ PNGDecoded *decode_data(FILE **file) {
     return decoded;
 }
 
-int generate_uncompressed_data(uint8_t *uncompressedData, uint8_t *pixels) {
+int generate_filtered_data(uint8_t *uncompressedData, uint8_t *pixels) {
     // TODO: Add logic
     return 1;
 }
 
 PNGChunks generate_chunks(uint8_t *compresedData) {
+    /* size_t size = 0; */
+    /**/
+    /* for (int i = 0; i < chunks->used; i++) { */
+    /*     if (strcmp(chunks->value[i].type, "IDAT") == 0) { */
+    /*         *compressedData = */
+    /*             realloc(*compressedData, size + chunks->value[i].length); */
+    /*         memcpy(*compressedData + size, chunks->value[i].data, */
+    /*                chunks->value[i].length); */
+    /*         size += chunks->value[i].length; */
+    /*     } */
+    /* } */
+    /**/
+    /* return size; */
     PNGChunks chunks;
 
     // TODO Add logic
@@ -251,7 +264,7 @@ int encode_data(FILE **file, PNGDecoded *decoded) {
         decoded->ihdr.width, decoded->ihdr.height, bytesPerPixel);
     uint8_t *uncompressedData = malloc(uncompressedSize);
     int uncompressResult =
-        generate_uncompressed_data(uncompressedData, decoded->pixels);
+        generate_filtered_data(uncompressedData, decoded->pixels);
 
     if (!uncompressResult) {
         printf("Failed to generate uncompressed data");
