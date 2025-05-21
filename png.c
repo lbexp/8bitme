@@ -200,6 +200,9 @@ int generate_filtered_data(uint8_t *uncompressedData, uint8_t *pixels,
     int scanlineLength = width * bytesPerPixel;
     int stride = scanlineLength + 1;
 
+    for (int y = 0; y < height; y++) {
+    }
+
     return 1;
 }
 
@@ -239,19 +242,6 @@ PNGDecoded *decode_data(FILE **file) {
 }
 
 PNGChunks generate_chunks(uint8_t *compresedData) {
-    /* size_t size = 0; */
-    /**/
-    /* for (int i = 0; i < chunks->used; i++) { */
-    /*     if (strcmp(chunks->value[i].type, "IDAT") == 0) { */
-    /*         *compressedData = */
-    /*             realloc(*compressedData, size + chunks->value[i].length); */
-    /*         memcpy(*compressedData + size, chunks->value[i].data, */
-    /*                chunks->value[i].length); */
-    /*         size += chunks->value[i].length; */
-    /*     } */
-    /* } */
-    /**/
-    /* return size; */
     PNGChunks chunks;
 
     // TODO Add logic
