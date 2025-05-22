@@ -72,6 +72,10 @@ void get_chunks(PNGChunks *chunks, FILE *file) {
     }
 }
 
+void generate_chunks(FILE *file, uint8_t *compresedData) {
+    // TODO: Add logic
+};
+
 size_t get_compressed_data(uint8_t **compressedData, PNGChunks *chunks) {
     size_t size = 0;
 
@@ -247,14 +251,6 @@ PNGDecoded *decode_data(FILE **file) {
     return decoded;
 }
 
-PNGChunks generate_chunks(uint8_t *compresedData) {
-    PNGChunks chunks;
-
-    // TODO Add logic
-
-    return chunks;
-};
-
 int encode_data(FILE **file, PNGDecoded *decoded) {
     int bytesPerPixel = get_bytes_per_pixel(decoded->ihdr.colorType);
 
@@ -282,12 +278,7 @@ int encode_data(FILE **file, PNGDecoded *decoded) {
         return 0;
     }
 
-    // Generate chunks
-    PNGChunks chunks;
-    generate_chunks(compressedData);
-
-    // Put chunks into file
-    // TODO: Add logic
+    generate_chunks(*file, compressedData);
 
     return 1;
 }
