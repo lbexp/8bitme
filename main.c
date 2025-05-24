@@ -28,6 +28,16 @@ int main() {
         return 0;
     }
 
+    FILE *newFile;
+    char *newFileName = "result.png";
+
+    file = fopen(newFileName, "w");
+
+    if (!encode_data(&newFile, decoded)) {
+        printf("Can't generate 8bit file");
+        return 0;
+    }
+
     printf("Success");
 
     fclose(file);
