@@ -273,8 +273,8 @@ int encode_data(FILE **file, PNGDecoded *decoded) {
     int compressResult =
         compress(compressedData, &compressedSize, filteredData, filteredSize);
 
-    if (!compressResult) {
-        printf("Failed to compress data\n");
+    if (compressResult != Z_OK) {
+        printf("Failed to compress data %d\n", compressResult);
         return 0;
     }
 
