@@ -73,7 +73,12 @@ void get_chunks(PNGChunks *chunks, FILE *file) {
 }
 
 void generate_chunks(FILE *file, uint8_t *compresedData) {
-    // TODO: Add logic
+    fwrite(PNG_SIGNATURE, 1, 8, file);
+
+    // TODO:
+    // Add IHDR chunk
+    // Add IDAT chunk
+    // Add IEND chunk
 };
 
 size_t get_compressed_data(uint8_t **compressedData, PNGChunks *chunks) {
