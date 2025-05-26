@@ -31,7 +31,7 @@ int main() {
     FILE *newFile;
     char *newFileName = "result.png";
 
-    file = fopen(newFileName, "w");
+    file = fopen(newFileName, "wb");
 
     if (!encode_data(&newFile, decoded)) {
         printf("Can't generate 8bit file\n");
@@ -41,6 +41,7 @@ int main() {
     printf("Success");
 
     fclose(file);
+    fclose(newFile);
 
     return 0;
 }
