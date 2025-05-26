@@ -263,7 +263,7 @@ int encode_data(FILE **file, PNGDecoded *decoded) {
         decoded->ihdr.height, bytesPerPixel);
 
     if (!filteredResult) {
-        printf("Failed to generate filtered data");
+        printf("Failed to generate filtered data\n");
         return 0;
     }
 
@@ -274,7 +274,7 @@ int encode_data(FILE **file, PNGDecoded *decoded) {
         compress(compressedData, &compressedSize, filteredData, filteredSize);
 
     if (!compressResult) {
-        printf("Failed to compress data");
+        printf("Failed to compress data\n");
         return 0;
     }
 

@@ -10,14 +10,14 @@ int main() {
     scanf("%s", (char *)&fileName);
 
     if (!validate_file_ext(fileName)) {
-        printf("File should be in supported format");
+        printf("File should be in supported format\n");
         return 0;
     }
 
     file = fopen(fileName, "rb");
 
     if (!file) {
-        printf("Can't find file named %s", fileName);
+        printf("Can't find file named %s\n", fileName);
         return 0;
     }
 
@@ -34,7 +34,7 @@ int main() {
     file = fopen(newFileName, "w");
 
     if (!encode_data(&newFile, decoded)) {
-        printf("Can't generate 8bit file");
+        printf("Can't generate 8bit file\n");
         return 0;
     }
 
