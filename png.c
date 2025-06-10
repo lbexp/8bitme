@@ -79,11 +79,31 @@ void get_chunks(PNGChunks *chunks, FILE *file) {
     }
 }
 
-void generate_chunks(FILE *file, uint8_t *compresedData) {
+void generate_chunks(FILE *file, uint8_t *compresedData, IHDRData ihdr) {
     fwrite(PNG_SIGNATURE, 1, 8, file);
 
-    // TODO:
     // Add IHDR chunk
+    uint8_t ihdrLength[4];
+    write_big_endian(ihdrLength, 13); // IHDR length always 13
+    fwrite(ihdrLength, 1, 4, file);
+
+    fwrite("IHDR", 1, 4, file);
+
+    uint8_t ihdrWidth[4];
+    write_big_endian(ihdrWidth, ihdr.width);
+    fwrite(ihdrWidth, 1, 4, file);
+
+    uint8_t ihdrHeight[4];
+    write_big_endian(ihdrHeight, ihdr.height);
+    fwrite(ihdrHeight, 1, 4, file);
+
+    fwrite(&ihdr.bitDepth, 1, 1, file);
+    fwrite(&ihdr.colorType, 1, 1, file);
+    fwrite(&ihdr.compressionMethod, 1, 1, file);
+    fwrite(&ihdr.filterMethod, 1, 1, file);
+    fwrite(&ihdr.interfaceMethod, 1, 1, file);
+
+    // TODO:
     // Add IDAT chunk
     // Add IEND chunk
 };
@@ -290,7 +310,7 @@ int encode_data(FILE **file, PNGDecoded *decoded) {
         return 0;
     }
 
-    generate_chunks(*file, compressedData);
+    generate_chunks(*file, compressedData, decoded->ihdr);
 
     return 1;
 }
