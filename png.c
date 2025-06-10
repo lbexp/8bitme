@@ -12,6 +12,13 @@ uint32_t read_big_endian(FILE *file) {
     return (b[0] << 24) | (b[1] << 16) | (b[2] << 8) | b[3];
 }
 
+void write_big_endian(uint8_t *bytes, uint32_t source) {
+    bytes[0] = (source >> 24) & 0xFF;
+    bytes[1] = (source >> 16) & 0xFF;
+    bytes[2] = (source >> 8) & 0xFF;
+    bytes[3] = source & 0xFF;
+}
+
 int validate_signature(FILE *file) {
     uint8_t *signature[8];
 
