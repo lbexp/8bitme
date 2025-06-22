@@ -79,7 +79,8 @@ void get_chunks(PNGChunks *chunks, FILE *file) {
     }
 }
 
-void generate_chunks(FILE *file, uint8_t *compresedData, IHDRData ihdr) {
+void generate_chunks(FILE *file, uint8_t *compressedData, uLongf *size,
+                     IHDRData ihdr) {
     fwrite(PNG_SIGNATURE, 1, 8, file);
 
     // Add IHDR chunk
@@ -105,6 +106,7 @@ void generate_chunks(FILE *file, uint8_t *compresedData, IHDRData ihdr) {
 
     // TODO:
     // Add IDAT chunk
+    fwrite("IDAT", 1, 4, file);
     // Add IEND chunk
 };
 
@@ -310,7 +312,7 @@ int encode_data(FILE **file, PNGDecoded *decoded) {
         return 0;
     }
 
-    generate_chunks(*file, compressedData, decoded->ihdr);
+    generate_chunks(*file, compressedData, &compressedSize, decoded->ihdr);
 
     return 1;
 }
