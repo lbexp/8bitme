@@ -250,6 +250,16 @@ int generate_filtered_data(uint8_t *filteredData, uint8_t *pixels,
     return 1;
 }
 
+/*
+ * Decode PNG data from file to PNGDecoded format
+ * {
+ *  IHDRData ihdr;
+ *  uint8_t *pixels;
+ * }
+ * the pixels data is chunk that got flatten out
+ * and visually would look like this:
+ * [<c>, <h>, <u>, <n>, <k>, <c>, <h>, <u>, ...]
+ */
 PNGDecoded *decode_data(FILE **file) {
     if (!validate_signature(*file)) {
         return NULL;
@@ -257,20 +267,32 @@ PNGDecoded *decode_data(FILE **file) {
 
     PNGDecoded *decoded;
 
+    // Get PNGChunks data, which consists of
+    // array of chunk information data per length
+    // [<ihdr>, <idat>, <idat>, ...]
     PNGChunks chunks;
     get_chunks(&chunks, *file);
 
+    // Get IDAT data only (by default as compressed data)
+    // would be store into pointer uint8_t (chunks being flatten out)
+    // [<i>, <d>, <a>, <t>, <i>, <d>, <a>, <t>, ...]
     uint8_t *compressedData = NULL;
     size_t compressedSize = get_compressed_data(&compressedData, &chunks);
 
+    // Get IHDR data separately
     get_ihdr_data(&decoded->ihdr, &chunks.value[0]);
 
+    // Get bytesPerPixel to determine uncompressed data size
+    // per image row (ihdr resolution width * bytesPerPixel)
+    // and each pixel data,
+    // bytesPerPixel meant pixel format (RGB, RGBA, Grayscale, etc)
     int bytesPerPixel = get_bytes_per_pixel(decoded->ihdr.colorType);
 
+    // Generate uncompressed data (still same format as compressed data, only
+    // longer values)
     uLongf uncompressedSize = get_uncompressed_size(
         decoded->ihdr.width, decoded->ihdr.height, bytesPerPixel);
     uint8_t *uncompressedData = malloc(uncompressedSize);
-
     int result = uncompress(uncompressedData, &uncompressedSize, compressedData,
                             compressedSize);
 
@@ -279,12 +301,18 @@ PNGDecoded *decode_data(FILE **file) {
         return NULL;
     }
 
+    // Generate raw pixels data,
+    // converting uncompressed data into unfiltered data which contains raw
+    // pixel data
     decoded->pixels = get_pixels(uncompressedData, decoded->ihdr.width,
                                  decoded->ihdr.height, bytesPerPixel);
 
     return decoded;
 }
 
+/*
+ * Encode PNGDecoded into binary file PNG
+ */
 int encode_data(FILE **file, PNGDecoded *decoded) {
     int bytesPerPixel = get_bytes_per_pixel(decoded->ihdr.colorType);
 
