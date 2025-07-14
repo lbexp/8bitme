@@ -317,6 +317,7 @@ int encode_data(FILE **file, PNGDecoded *decoded) {
     int bytesPerPixel = get_bytes_per_pixel(decoded->ihdr.colorType);
 
     // Generate filtered data
+    // Change pixles data into filtered data
     uLongf filteredSize = get_uncompressed_size(
         decoded->ihdr.width, decoded->ihdr.height, bytesPerPixel);
     uint8_t *filteredData = malloc(filteredSize);
@@ -329,7 +330,8 @@ int encode_data(FILE **file, PNGDecoded *decoded) {
         return 0;
     }
 
-    // Generate compressed data
+    // Generate compressed filtered data
+    // [<i>, <d>, <a>, <t>, <i>, <d>, <a>, <t>, ...]
     uLongf compressedSize = compressBound(filteredSize);
     uint8_t *compressedData = malloc(compressedSize);
     int compressResult =
@@ -340,6 +342,8 @@ int encode_data(FILE **file, PNGDecoded *decoded) {
         return 0;
     }
 
+    // Generate chunks data and put into file
+    // [<ihdr>, <idat>, <idat>, ...]
     generate_chunks(*file, compressedData, &compressedSize, decoded->ihdr);
 
     return 1;
