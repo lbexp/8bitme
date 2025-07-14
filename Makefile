@@ -5,4 +5,4 @@ compile:
 link:
 	gcc -o build/8bitme build/main.o build/file.o build/png.o -lz
 run:
-	./build/8bitme
+	Make compile && Make link && ./build/8bitme
