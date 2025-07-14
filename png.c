@@ -47,10 +47,14 @@ void get_ihdr_data(IHDRData *ihdr, PNGChunk *chunk) {
     ihdr->interfaceMethod = chunkData[12];
 }
 
-void get_chunks(PNGChunks *chunks, FILE *file) {
-    chunks->value = NULL;
-    chunks->used = 0;
-    chunks->size = 0;
+void get_chunks(PNGChunks *meta, PNGChunks *idat, FILE *file) {
+    meta->value = NULL;
+    meta->used = 0;
+    meta->size = 0;
+
+    idat->value = NULL;
+    idat->used = 0;
+    idat->size = 0;
 
     while (!feof(file)) {
         PNGChunk chunk;
@@ -65,16 +69,24 @@ void get_chunks(PNGChunks *chunks, FILE *file) {
 
         fseek(file, 4, SEEK_CUR); // SKIP CRC on chunk
 
-        if (chunks->used >= chunks->size) {
-            chunks->size = chunks->size ? chunks->size * 2 : 8;
-            chunks->value =
-                realloc(chunks->value, chunks->size * sizeof(PNGChunk));
-        }
-
-        chunks->value[chunks->used++] = chunk;
-
         if (strcmp(chunk.type, "IEND") == 0) {
             break;
+        } else if (strcmp(chunk.type, "IDAT") == 0) {
+            if (idat->used >= idat->size) {
+                idat->size = idat->size ? idat->size * 2 : 8;
+                idat->value =
+                    realloc(idat->value, idat->size * sizeof(PNGChunk));
+            }
+
+            idat->value[idat->used++] = chunk;
+        } else {
+            if (meta->used >= meta->size) {
+                meta->size = meta->size ? meta->size * 2 : 8;
+                meta->value =
+                    realloc(meta->value, meta->size * sizeof(PNGChunk));
+            }
+
+            meta->value[meta->used++] = chunk;
         }
     }
 }
@@ -107,7 +119,7 @@ void generate_chunks(FILE *file, uint8_t *compressedData, uLongf *size,
     // TODO:
     // Add IDAT chunk
     fwrite("IDAT", 1, 4, file);
-    // Add IEND chunk
+    fwrite("IEND", 1, 4, file);
 };
 
 size_t get_compressed_data(uint8_t **compressedData, PNGChunks *chunks) {
@@ -270,17 +282,18 @@ PNGDecoded *decode_data(FILE **file) {
     // Get PNGChunks data, which consists of
     // array of chunk information data per length
     // [<ihdr>, <idat>, <idat>, ...]
-    PNGChunks chunks;
-    get_chunks(&chunks, *file);
+    PNGChunks metaChunks;
+    PNGChunks idatChunks;
+    get_chunks(&metaChunks, &idatChunks, *file);
 
     // Get IDAT data only (by default as compressed data)
     // would be store into pointer uint8_t (chunks being flatten out)
     // [<i>, <d>, <a>, <t>, <i>, <d>, <a>, <t>, ...]
     uint8_t *compressedData = NULL;
-    size_t compressedSize = get_compressed_data(&compressedData, &chunks);
+    size_t compressedSize = get_compressed_data(&compressedData, &idatChunks);
 
     // Get IHDR data separately
-    get_ihdr_data(&decoded->ihdr, &chunks.value[0]);
+    get_ihdr_data(&decoded->ihdr, &metaChunks.value[0]);
 
     // Get bytesPerPixel to determine uncompressed data size
     // per image row (ihdr resolution width * bytesPerPixel)
