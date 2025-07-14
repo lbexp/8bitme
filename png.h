@@ -27,7 +27,9 @@ typedef struct {
 } PNGChunks;
 
 typedef struct {
-    IHDRData ihdr;
+    IHDRData ihdr; // TODO: Probably need to remove this redundant data (already
+                   // stored in metaChunks)
+    PNGChunks metaChunks;
     uint8_t *pixels;
 } PNGDecoded;
 

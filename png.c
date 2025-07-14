@@ -92,29 +92,19 @@ void get_chunks(PNGChunks *meta, PNGChunks *idat, FILE *file) {
 }
 
 void generate_chunks(FILE *file, uint8_t *compressedData, uLongf *size,
-                     IHDRData ihdr) {
+                     PNGChunks *meta) {
     fwrite(PNG_SIGNATURE, 1, 8, file);
 
-    // Add IHDR chunk
-    uint8_t ihdrLength[4];
-    write_big_endian(ihdrLength, 13); // IHDR length always 13
-    fwrite(ihdrLength, 1, 4, file);
+    for (int i = 0; i < meta->used; i++) {
+        PNGChunk chunk = meta->value[i];
+        uint8_t bigEndianLength[4];
 
-    fwrite("IHDR", 1, 4, file);
+        fwrite(chunk.type, 1, 4, file);
+        write_big_endian(bigEndianLength, chunk.length);
+        fwrite(bigEndianLength, 1, 4, file);
 
-    uint8_t ihdrWidth[4];
-    write_big_endian(ihdrWidth, ihdr.width);
-    fwrite(ihdrWidth, 1, 4, file);
-
-    uint8_t ihdrHeight[4];
-    write_big_endian(ihdrHeight, ihdr.height);
-    fwrite(ihdrHeight, 1, 4, file);
-
-    fwrite(&ihdr.bitDepth, 1, 1, file);
-    fwrite(&ihdr.colorType, 1, 1, file);
-    fwrite(&ihdr.compressionMethod, 1, 1, file);
-    fwrite(&ihdr.filterMethod, 1, 1, file);
-    fwrite(&ihdr.interfaceMethod, 1, 1, file);
+        fwrite(chunk.data, 1, chunk.length, file);
+    }
 
     // TODO:
     // Add IDAT chunk
@@ -285,6 +275,7 @@ PNGDecoded *decode_data(FILE **file) {
     PNGChunks metaChunks;
     PNGChunks idatChunks;
     get_chunks(&metaChunks, &idatChunks, *file);
+    decoded->metaChunks = metaChunks;
 
     // Get IDAT data only (by default as compressed data)
     // would be store into pointer uint8_t (chunks being flatten out)
@@ -357,7 +348,8 @@ int encode_data(FILE **file, PNGDecoded *decoded) {
 
     // Generate chunks data and put into file
     // [<ihdr>, <idat>, <idat>, ...]
-    generate_chunks(*file, compressedData, &compressedSize, decoded->ihdr);
+    generate_chunks(*file, compressedData, &compressedSize,
+                    &decoded->metaChunks);
 
     return 1;
 }
