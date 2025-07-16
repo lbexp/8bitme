@@ -4,6 +4,8 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#define IDAT_LENGTH 16384
+
 typedef struct {
     uint32_t width;
     uint32_t height;

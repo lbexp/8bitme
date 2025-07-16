@@ -95,20 +95,34 @@ void generate_chunks(FILE *file, uint8_t *compressedData, uLongf *size,
                      PNGChunks *meta) {
     fwrite(PNG_SIGNATURE, 1, 8, file);
 
+    // Write meta chunks (IHDR, etc)
     for (int i = 0; i < meta->used; i++) {
         PNGChunk chunk = meta->value[i];
+
         uint8_t bigEndianLength[4];
-
-        fwrite(chunk.type, 1, 4, file);
         write_big_endian(bigEndianLength, chunk.length);
-        fwrite(bigEndianLength, 1, 4, file);
 
+        fwrite(bigEndianLength, 1, 4, file);
+        fwrite(chunk.type, 1, 4, file);
         fwrite(chunk.data, 1, chunk.length, file);
     }
 
-    // TODO:
-    // Add IDAT chunk
-    fwrite("IDAT", 1, 4, file);
+    // Writing IDAT by loop through *compressedData
+    uLongf idatPointer = 0;
+    while (idatPointer < *size) {
+        uLongf remaining = *size - idatPointer;
+        uint32_t length =
+            (remaining > IDAT_LENGTH) ? IDAT_LENGTH : (uint32_t)remaining;
+
+        uint8_t bigEndianLength[4];
+        write_big_endian(bigEndianLength, length);
+
+        fwrite(bigEndianLength, 1, 4, file);
+        fwrite("IDAT", 1, 4, file);
+        fwrite(compressedData + idatPointer, 1, length, file);
+        // TODO: Write IDAT CRC
+    }
+
     fwrite("IEND", 1, 4, file);
 };
 
