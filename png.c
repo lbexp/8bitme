@@ -117,10 +117,27 @@ void generate_chunks(FILE *file, uint8_t *compressedData, uLongf *size,
         uint8_t bigEndianLength[4];
         write_big_endian(bigEndianLength, length);
 
+        uint8_t *currentStart = compressedData + idatPointer;
+
         fwrite(bigEndianLength, 1, 4, file);
         fwrite("IDAT", 1, 4, file);
-        fwrite(compressedData + idatPointer, 1, length, file);
-        // TODO: Write IDAT CRC
+        fwrite(currentStart, 1, length, file);
+
+        uLongf crc = crc32(0, NULL, 0);
+        crc = crc32(crc, (const Bytef *)"IDAT", 4);
+        crc = crc32(crc, currentStart, length);
+
+        uint8_t bigEndianCrc[4];
+        write_big_endian(bigEndianCrc, crc);
+        fwrite(bigEndianCrc, 1, 4, file);
+
+        if (length != (uint32_t)IDAT_LENGTH) {
+            printf("Write IDAT %d, %d, %d\n", (int)idatPointer, (int)*size,
+                   length);
+            break;
+        }
+
+        idatPointer += IDAT_LENGTH;
     }
 
     fwrite("IEND", 1, 4, file);
