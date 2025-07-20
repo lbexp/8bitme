@@ -270,14 +270,18 @@ int generate_filtered_data(uint8_t *filteredData, uint8_t *pixels,
                            uint32_t width, uint32_t height, int bytesPerPixel) {
     int scanlineLength = width * bytesPerPixel;
     int stride = scanlineLength + 1;
+    int offset = 0;
 
     for (int y = 0; y < height; y++) {
         uint8_t *scanline = pixels + (y * stride);
         // TODO: Add other filter type to get more compressed data
         // Hardcoded to 0 for MVP
         uint8_t filterType = 0;
+        filteredData[offset] = filterType;
 
         memcpy(filteredData, scanline, stride);
+
+        offset += stride + 1;
     }
 
     return 1;
