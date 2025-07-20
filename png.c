@@ -48,6 +48,7 @@ void get_ihdr_data(IHDRData *ihdr, PNGChunk *chunk) {
 }
 
 void get_chunks(PNGChunks *meta, PNGChunks *idat, FILE *file) {
+    printf("************************ GET CHUNKS ************************\n");
     meta->value = NULL;
     meta->used = 0;
     meta->size = 0;
@@ -67,8 +68,12 @@ void get_chunks(PNGChunks *meta, PNGChunks *idat, FILE *file) {
         chunk.data = malloc(chunk.length);
         fread(chunk.data, 1, chunk.length, file);
 
-        fseek(file, 4, SEEK_CUR); // SKIP CRC on chunk
+        /* fseek(file, 4, SEEK_CUR);    // SKIP CRC on chunk */
+        uint32_t crc = read_big_endian(file);
+        /* fread(&crc, 1, 4, file); // SKIP CRC on chunk */
 
+        printf("Chunk -> length %d, type %s, crc %d\n", chunk.length,
+               chunk.type, crc);
         if (strcmp(chunk.type, "IEND") == 0) {
             break;
         } else if (strcmp(chunk.type, "IDAT") == 0) {
@@ -105,6 +110,17 @@ void generate_chunks(FILE *file, uint8_t *compressedData, uLongf *size,
         fwrite(bigEndianLength, 1, 4, file);
         fwrite(chunk.type, 1, 4, file);
         fwrite(chunk.data, 1, chunk.length, file);
+
+        uLongf crc = crc32(0, NULL, 0);
+        crc = crc32(crc, (const Bytef *)chunk.type, 4);
+        crc = crc32(crc, chunk.data, chunk.length);
+
+        uint8_t bigEndianCrc[4];
+        write_big_endian(bigEndianCrc, crc);
+        fwrite(bigEndianCrc, 1, 4, file);
+
+        printf("Chunk -> length %d, type %s, crc %d\n", chunk.length,
+               chunk.type, *bigEndianCrc);
     }
 
     // Writing IDAT by loop through *compressedData
@@ -130,10 +146,10 @@ void generate_chunks(FILE *file, uint8_t *compressedData, uLongf *size,
         uint8_t bigEndianCrc[4];
         write_big_endian(bigEndianCrc, crc);
         fwrite(bigEndianCrc, 1, 4, file);
+        printf("Chunk -> length %d, type %s, crc %d\n", length, "IDAT",
+               *bigEndianCrc);
 
         if (length != (uint32_t)IDAT_LENGTH) {
-            printf("Write IDAT %d, %d, %d\n", (int)idatPointer, (int)*size,
-                   length);
             break;
         }
 
@@ -298,6 +314,9 @@ int generate_filtered_data(uint8_t *filteredData, uint8_t *pixels,
  * [<c>, <h>, <u>, <n>, <k>, <c>, <h>, <u>, ...]
  */
 PNGDecoded *decode_data(FILE **file) {
+    printf("\n************************************************************\n");
+    printf("************************* DECODING *************************");
+    printf("\n************************************************************\n");
     if (!validate_signature(*file)) {
         return NULL;
     }
@@ -353,6 +372,9 @@ PNGDecoded *decode_data(FILE **file) {
  * Encode PNGDecoded into binary file PNG
  */
 int encode_data(FILE **file, PNGDecoded *decoded) {
+    printf("\n************************************************************\n");
+    printf("************************* ENCODING *************************");
+    printf("\n************************************************************\n");
     int bytesPerPixel = get_bytes_per_pixel(decoded->ihdr.colorType);
 
     // Generate filtered data
