@@ -215,10 +215,9 @@ uint8_t *get_pixels(uint8_t *data, uint32_t width, uint32_t height,
         uint8_t filterType = scanline[0];
         uint8_t *currentFiltered = scanline + 1;
 
-        uint8_t *prevScanline = y > 0 ? data + ((y - 1) * stride) : NULL;
-        uint8_t *prevFiltered = y > 0 ? prevScanline + 1 : NULL;
-
         uint8_t *output = pixels + (y * scanlineLength);
+        uint8_t *prevOutput =
+            y > 0 ? pixels + ((y - 1) * scanlineLength) : NULL;
 
         switch (filterType) {
         case 0: // None
@@ -233,7 +232,7 @@ uint8_t *get_pixels(uint8_t *data, uint32_t width, uint32_t height,
             break;
         case 2: // Up
             for (int i = 0; i < scanlineLength; i++) {
-                uint8_t up = prevFiltered ? prevFiltered[i] : 0;
+                uint8_t up = prevOutput ? prevOutput[i] : 0;
                 output[i] = currentFiltered[i] + up;
             }
             break;
@@ -241,7 +240,7 @@ uint8_t *get_pixels(uint8_t *data, uint32_t width, uint32_t height,
             for (int i = 0; i < scanlineLength; i++) {
                 uint8_t left =
                     i >= bytesPerPixel ? output[i - bytesPerPixel] : 0;
-                uint8_t up = prevFiltered ? prevFiltered[i] : 0;
+                uint8_t up = prevOutput ? prevOutput[i] : 0;
                 uint8_t avg = (left + up) / 2;
                 output[i] = currentFiltered[i] + avg;
             }
@@ -250,9 +249,9 @@ uint8_t *get_pixels(uint8_t *data, uint32_t width, uint32_t height,
             for (int i = 0; i < scanlineLength; i++) {
                 uint8_t left =
                     i >= bytesPerPixel ? output[i - bytesPerPixel] : 0;
-                uint8_t up = prevFiltered ? prevFiltered[i] : 0;
-                uint8_t upLeft = prevFiltered && i >= bytesPerPixel
-                                     ? prevFiltered[i - bytesPerPixel]
+                uint8_t up = prevOutput ? prevOutput[i] : 0;
+                uint8_t upLeft = prevOutput && i >= bytesPerPixel
+                                     ? prevOutput[i - bytesPerPixel]
                                      : 0;
 
                 // Calculations for getting the paeth value
