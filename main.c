@@ -28,6 +28,8 @@ int main() {
         return 0;
     }
 
+    convert_to_grayscale(decoded);
+
     FILE *newFile;
     char *newFileName = "result.png";
 

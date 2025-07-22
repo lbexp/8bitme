@@ -409,3 +409,23 @@ int encode_data(FILE **file, PNGDecoded *decoded) {
 
     return 1;
 }
+
+int convert_to_grayscale(PNGDecoded *decoded) {
+    int bytesPerPixel = get_bytes_per_pixel(decoded->ihdr.colorType);
+    int totalBytes = decoded->ihdr.width * decoded->ihdr.height * bytesPerPixel;
+
+    for (int i = 0; i < totalBytes; i += bytesPerPixel) {
+        int bytesAccPerPixel = 0;
+        for (int j = 0; j < bytesPerPixel; j++) {
+            int currBytePixelPointer = i + j;
+            bytesAccPerPixel += decoded->pixels[currBytePixelPointer];
+        }
+        for (int j = 0; j < bytesPerPixel; j++) {
+            int currBytePixelPointer = i + j;
+            decoded->pixels[currBytePixelPointer] =
+                bytesAccPerPixel / bytesPerPixel;
+        }
+    }
+
+    return 1;
+}

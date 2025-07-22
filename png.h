@@ -51,4 +51,6 @@ PNGDecoded *decode_data(FILE **file);
 
 int encode_data(FILE **file, PNGDecoded *decoded);
 
+int convert_to_grayscale(PNGDecoded *decoded);
+
 #endif
