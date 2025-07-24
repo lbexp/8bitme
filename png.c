@@ -429,3 +429,14 @@ int convert_to_grayscale(PNGDecoded *decoded) {
 
     return 1;
 }
+
+int convert_to_8bit(PNGDecoded *decoded) {
+    int bytesPerPixel = get_bytes_per_pixel(decoded->ihdr.colorType);
+    int totalBytes = decoded->ihdr.width * decoded->ihdr.height * bytesPerPixel;
+
+    for (int i = 0; i < totalBytes; i++) {
+        decoded->pixels[i] = (decoded->pixels[i] >> 5) << 5;
+    }
+
+    return 1;
+}

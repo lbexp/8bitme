@@ -53,4 +53,6 @@ int encode_data(FILE **file, PNGDecoded *decoded);
 
 int convert_to_grayscale(PNGDecoded *decoded);
 
+int convert_to_8bit(PNGDecoded *decoded);
+
 #endif

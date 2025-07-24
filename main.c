@@ -28,7 +28,8 @@ int main() {
         return 0;
     }
 
-    convert_to_grayscale(decoded);
+    /* convert_to_grayscale(decoded); */
+    convert_to_8bit(decoded);
 
     FILE *newFile;
     char *newFileName = "result.png";
